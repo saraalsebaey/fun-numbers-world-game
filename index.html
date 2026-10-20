@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>عالم الأرقام الممتع</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@700&family=Nunito:wght@700&display=swap');
+
+        :root {
+            --primary: #4ecdc4;
+            --secondary: #ff6b6b;
+            --success: #27ae60;
+            --bg: #eafaf1; 
+            --text: #2c3e50;
+            --font-ar: 'Tajawal', sans-serif;
+            --font-en: 'Nunito', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg);
+            font-family: var(--font-ar);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        body.en-lang {
+            font-family: var(--font-en);
+            dir: ltr;
+        }
+
+        /* زر تغيير اللغة */
+        .lang-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border: 2px solid var(--primary);
+            border-radius: 20px;
+            padding: 8px 15px;
+            font-size: 1.2rem;
+            font-family: inherit;
+            font-weight: bold;
+            color: var(--primary);
+            cursor: pointer;
+            z-index: 100;
+        }
+        
+        body.en-lang .lang-btn {
+            right: auto;
+            left: 20px;
+        }
+
+        /* زر الرئيسية الجديد */
+        .home-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: white;
+            border: 2px solid var(--secondary);
+            border-radius: 20px;
+            padding: 8px 15px;
+            font-size: 1.2rem;
+            font-family: inherit;
+            font-weight: bold;
+            color: var(--secondary);
+            cursor: pointer;
+            z-index: 100;
+            display: none; /* مخفي في شاشة البداية */
+        }
+        
+        body.en-lang .home-btn {
+            left: auto;
+            right: 20px;
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100vh;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        h1#main-title {
+            font-size: 2.5rem;
+            color: var(--success);
+            margin-bottom: 20px;
+        }
+
+        h2.instruction {
+            font-size: 2rem;
+            color: var(--success);
+            margin-bottom: 30px;
+        }
+
+        /* Setup Screen */
+        .setup-box {
+            background: white;
+            padding: 40px;
+            border-radius: 30px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            border: 5px solid #a8e6cf;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #num-input {
+            width: 120px;
+            height: 100px;
+            font-size: 4rem;
+            text-align: center;
+            border: 4px solid #a0c4ff;
+            border-radius: 20px;
+            margin: 20px 0 30px 0;
+            font-family: inherit;
+            font-weight: bold;
+            color: var(--text);
+            outline: none;
+        }
+
+        .btn {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 2rem;
+            border-radius: 40px;
+            font-family: inherit;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #1e8449;
+        }
+
+        .btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 0 0 #1e8449;
+        }
+
+        /* Round 1: Apples */
+        .game-area {
+            flex: 1;
+            width: 100%;
+            max-width: 800px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            padding-bottom: 50px;
+        }
+
+        .apples-container {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            padding: 20px;
+        }
+
+        .apple {
+            width: 70px;
+            height: 70px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .apple.collected { display: none; }
+
+        .basket {
+            width: 200px;
+            height: 150px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .counter {
+            font-size: 4rem;
+            font-weight: bold;
+            color: var(--text);
+            background: white;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 4px solid var(--primary);
+            margin-top: -20px;
+            z-index: 11;
+        }
+
+        /* Round 2 & 3 */
+        .options-container {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .option-card {
+            background: white;
+            border: 4px solid #a0c4ff;
+            border-radius: 20px;
+            padding: 20px;
+            min-width: 150px;
+            min-height: 150px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #a0c4ff;
+        }
+
+        .option-card:active {
+            transform: translateY(6px);
+            box-shadow: 0 0 0 #a0c4ff;
+        }
+
+        .option-card .shape {
+            width: 40px;
+            height: 40px;
+        }
+
+        .number-card {
+            font-size: 5rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        /* Round 4: Balloons */
+        .balloons-area {
+            position: relative;
+            width: 100%;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .balloon {
+            position: absolute;
+            width: 80px;
+            height: 100px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: white;
+            bottom: -150px;
+            animation: floatUp linear infinite;
+        }
+
+        .balloon-svg {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) rotate(-5deg); }
+            50% { transform: translateY(-50vh) rotate(5deg); }
+            100% { transform: translateY(-120vh) rotate(-5deg); }
+        }
+
+        /* Feedback */
+        .feedback {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: white;
+            padding: 30px 50px;
+            border-radius: 30px;
+            border: 5px solid var(--success);
+            font-size: 3rem;
+            color: var(--success);
+            font-weight: bold;
+            z-index: 1000;
+            transition: transform 0.3s;
+            text-align: center;
+        }
+
+        .feedback.show {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .feedback.error {
+            border-color: var(--secondary);
+            color: var(--secondary);
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 10px;
+            width: 100%;
+            text-align: center;
+            font-size: 1rem;
+            color: #888;
+            z-index: 10;
+        }
+
+        .svg-icon { width: 100%; height: 100%; }
+
+    </style>
+</head>
+<body>
+
+    <button id="lang-btn" class="lang-btn" onclick="toggleLanguage()">English</button>
+    <!-- زر العودة للشاشة الرئيسية -->
+    <button id="home-btn" class="home-btn" onclick="resetGame()">الرئيسية</button>
+
+    <!-- Setup Screen -->
+    <div id="screen-setup" class="screen active">
+        <div class="setup-box">
+            <h1 id="main-title">عالم الأرقام الممتع</h1>
+            <h2 id="setup-title" class="instruction" style="margin-bottom:10px;">أي رقم سنتعلم اليوم؟</h2>
+            <input type="text" id="num-input" value="٦" autocomplete="off">
+            <button id="start-btn" class="btn" onclick="startGame()">ابدأ اللعب!</button>
+        </div>
+    </div>
+
+    <!-- Round 1: Basket -->
+    <div id="screen-r1" class="screen">
+        <h2 id="r1-inst" class="instruction">ساعدني أجمع ٦ تفاحات</h2>
+        <div class="game-area">
+            <div id="apples-container" class="apples-container"></div>
+            <div class="basket" id="basket-img"></div>
+            <div id="r1-counter" class="counter">٠</div>
+        </div>
+    </div>
+
+    <!-- Round 2: Groups -->
+    <div id="screen-r2" class="screen">
+        <h2 id="r2-inst" class="instruction">أين المجموعة التي تحتوي على ٦ أشياء؟</h2>
+        <div id="r2-options" class="options-container"></div>
+    </div>
+
+    <!-- Round 3: Numbers -->
+    <div id="screen-r3" class="screen">
+        <h2 id="r3-inst" class="instruction">أين هو الرقم ٦؟</h2>
+        <div id="r3-options" class="options-container"></div>
+    </div>
+
+    <!-- Round 4: Balloons -->
+    <div id="screen-r4" class="screen">
+        <h2 id="r4-inst" class="instruction">فرقع البالونات التي تحتوي على الرقم ٦</h2>
+        <div id="balloons-area" class="balloons-area"></div>
+        <div id="r4-counter" class="counter" style="position:absolute; bottom:20px; right:20px;">٠</div>
+    </div>
+
+    <!-- End Screen -->
+    <div id="screen-end" class="screen">
+        <div class="setup-box" style="border-color: var(--success);">
+            <h1 id="end-title" style="font-size: 4rem; color: var(--success); margin-bottom: 30px;">أحسنت!</h1>
+            <button id="restart-btn" class="btn" onclick="resetGame()">العب مرة أخرى</button>
+        </div>
+    </div>
+
+    <div id="feedback-msg" class="feedback"></div>
+    <div id="footer-text" class="footer">تصميم : أ/ سارة نبيل</div>
+
+    <script>
+        let currentLang = 'ar';
+        let targetNum = 6;
+        let r1Count = 0;
+        let r4Count = 0;
+        let activeBalloonsInterval;
+
+        const text = {
+            ar: {
+                langBtn: "English",
+                homeBtn: "الرئيسية",
+                mainTitle: "عالم الأرقام الممتع",
+                setupTitle: "أي رقم سنتعلم اليوم؟",
+                startBtn: "ابدأ اللعب!",
+                r1Inst: (n) => `ساعدني أجمع ${n} تفاحات`,
+                r2Inst: (n) => `أين المجموعة التي تحتوي على ${n} أشياء؟`,
+                r3Inst: (n) => `أين هو الرقم ${n}؟`,
+                r4Inst: (n) => `فرقع البالونات التي تحتوي على الرقم ${n}`,
+                wellDone: "أحسنت!",
+                wellDoneApples: (n) => `أحسنت! جمعت ${n} تفاحات`,
+                tryAgain: "حاول مرة أخرى!",
+                playAgain: "العب مرة أخرى",
+                footer: "تصميم : أ/ سارة نبيل"
+            },
+            en: {
+                langBtn: "عربي",
+                homeBtn: "Home",
+                mainTitle: "Fun Numbers World",
+                setupTitle: "Which number will we learn today?",
+                startBtn: "Start Playing!",
+                r1Inst: (n) => `Help me collect ${n} apples`,
+                r2Inst: (n) => `Which group has ${n} items?`,
+                r3Inst: (n) => `Where is the number ${n}?`,
+                r4Inst: (n) => `Pop the balloons with the number ${n}`,
+                wellDone: "Well done!",
+                wellDoneApples: (n) => `Well done! You collected ${n} apples`,
+                tryAgain: "Try again!",
+                playAgain: "Play Again",
+                footer: "designed by: T/ Sara Nabil"
+            }
+        };
+
+        const arabicNums = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+
+        const svgApple = `<svg viewBox="0 0 100 100" class="svg-icon"><path d="M50,90 C20,90 10,60 10,40 C10,20 30,10 50,30 C70,10 90,20 90,40 C90,60 80,90 50,90 Z" fill="#ff4d4d"/><path d="M50,30 Q60,10 70,20 Q60,30 50,30 Z" fill="#38b000"/><path d="M50,30 C48,20 48,15 52,10" stroke="#5c4033" stroke-width="4" fill="none"/></svg>`;
+        const svgBasket = `<svg viewBox="0 0 200 150" class="svg-icon"><path d="M20,50 L180,50 L150,140 L50,140 Z" fill="#d4a373" stroke="#bc6c25" stroke-width="8"/><path d="M10,50 L190,50" stroke="#bc6c25" stroke-width="12" stroke-linecap="round"/><path d="M50,50 C50,10 150,10 150,50" stroke="#bc6c25" stroke-width="8" fill="none"/></svg>`;
+        const svgShape = `<svg viewBox="0 0 100 100" class="shape"><circle cx="50" cy="50" r="45" fill="#4ecdc4"/></svg>`;
+
+        function getBalloonSvg(color) {
+            return `<svg viewBox="0 0 100 120" class="balloon-svg"><ellipse cx="50" cy="50" rx="40" ry="50" fill="${color}"/><path d="M50,100 L45,110 L55,110 Z" fill="${color}"/><path d="M50,110 Q40,120 50,130" stroke="#999" stroke-width="2" fill="none"/></svg>`;
+        }
+
+        function formatNum(num) {
+            if (currentLang === 'en') return num.toString();
+            return num.toString().split('').map(d => arabicNums[d] || d).join('');
+        }
+
+        function parseArabicInput(str) {
+            let engStr = str;
+            arabicNums.forEach((ar, en) => { engStr = engStr.split(ar).join(en); });
+            return parseInt(engStr.replace(/[^0-9]/g, '')) || 0;
+        }
+
+        const numInput = document.getElementById('num-input');
+        numInput.addEventListener('input', function(e) {
+            let val = e.target.value;
+            if (currentLang === 'ar') {
+                val = val.replace(/[0-9]/g, w => arabicNums[w]);
+                val = val.replace(/[^٠-٩]/g, '');
+            } else {
+                val = val.replace(/[^0-9]/g, '');
+            }
+            e.target.value = val;
+        });
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'ar' ? 'en' : 'ar';
+            document.body.className = currentLang === 'en' ? 'en-lang' : '';
+            document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+            
+            document.getElementById('lang-btn').textContent = text[currentLang].langBtn;
+            document.getElementById('home-btn').textContent = text[currentLang].homeBtn;
+            document.getElementById('main-title').textContent = text[currentLang].mainTitle;
+            document.getElementById('setup-title').textContent = text[currentLang].setupTitle;
+            document.getElementById('start-btn').textContent = text[currentLang].startBtn;
+            document.getElementById('footer-text').textContent = text[currentLang].footer;
+            document.getElementById('restart-btn').textContent = text[currentLang].playAgain;
+            document.getElementById('end-title').textContent = text[currentLang].wellDone;
+
+            let currentVal = parseArabicInput(numInput.value);
+            if(currentVal > 0) { numInput.value = formatNum(currentVal); } 
+            else { numInput.value = formatNum(6); }
+        }
+
+        function startGame() {
+            let inputVal = parseArabicInput(numInput.value);
+            if (inputVal < 1 || inputVal > 20) {
+                targetNum = 6;
+                numInput.value = formatNum(6);
+            } else { targetNum = inputVal; }
+            
+            document.getElementById('home-btn').style.display = 'block'; // إظهار زر الرئيسية
+            document.getElementById('basket-img').innerHTML = svgBasket;
+            switchScreen('screen-r1');
+            initRound1();
+        }
+
+        function switchScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function showFeedback(isSuccess, message, callback) {
+            const fb = document.getElementById('feedback-msg');
+            fb.textContent = message;
+            fb.className = 'feedback show ' + (isSuccess ? '' : 'error');
+            
+            setTimeout(() => {
+                fb.className = 'feedback';
+                if (callback) callback();
+            }, 1500);
+        }
+
+        function initRound1() {
+            document.getElementById('r1-inst').textContent = text[currentLang].r1Inst(formatNum(targetNum));
+            const container = document.getElementById('apples-container');
+            const counter = document.getElementById('r1-counter');
+            container.innerHTML = '';
+            r1Count = 0;
+            counter.textContent = formatNum(0);
+
+            const totalApples = targetNum + Math.floor(targetNum / 2) + 1;
+            
+            for (let i = 0; i < totalApples; i++) {
+                let apple = document.createElement('div');
+                apple.className = 'apple';
+                apple.innerHTML = svgApple;
+                apple.onclick = function() {
+                    if (this.classList.contains('collected') || r1Count >= targetNum) return;
+                    this.classList.add('collected');
+                    r1Count++;
+                    counter.textContent = formatNum(r1Count);
+                    
+                    if (r1Count === targetNum) {
+                        setTimeout(() => {
+                            showFeedback(true, text[currentLang].wellDoneApples(formatNum(targetNum)), () => {
+                                switchScreen('screen-r2');
+                                initRound2();
+                            });
+                        }, 500);
+                    }
+                };
+                container.appendChild(apple);
+            }
+        }
+
+        function initRound2() {
+            document.getElementById('r2-inst').textContent = text[currentLang].r2Inst(formatNum(targetNum));
+            const container = document.getElementById('r2-options');
+            container.innerHTML = '';
+
+            let wrong1 = targetNum > 1 ? targetNum - 1 : targetNum + 2;
+            let wrong2 = targetNum + 1;
+            let options = [targetNum, wrong1, wrong2].sort(() => Math.random() - 0.5);
+
+            options.forEach(num => {
+                let card = document.createElement('div');
+                card.className = 'option-card';
+                for(let i=0; i<num; i++) {
+                    card.innerHTML += svgShape;
+                }
+                card.onclick = () => {
+                    if(num === targetNum) {
+                        showFeedback(true, text[currentLang].wellDone, () => {
+                            switchScreen('screen-r3');
+                            initRound3();
+                        });
+                    } else {
+                        showFeedback(false, text[currentLang].tryAgain);
+                    }
+                };
+                container.appendChild(card);
+            });
+        }
+
+        function initRound3() {
+            document.getElementById('r3-inst').textContent = text[currentLang].r3Inst(formatNum(targetNum));
+            const container = document.getElementById('r3-options');
+            container.innerHTML = '';
+
+            let wrong1 = targetNum === 6 ? 2 : (targetNum === 2 ? 6 : targetNum + 1);
+            let wrong2 = targetNum === 7 ? 8 : (targetNum === 8 ? 7 : (targetNum > 1 ? targetNum - 1 : targetNum + 2));
+            let options = [targetNum, wrong1, wrong2].sort(() => Math.random() - 0.5);
+
+            options.forEach(num => {
+                let card = document.createElement('div');
+                card.className = 'option-card number-card';
+                card.textContent = formatNum(num);
+                card.onclick = () => {
+                    if(num === targetNum) {
+                        showFeedback(true, text[currentLang].wellDone, () => {
+                            switchScreen('screen-r4');
+                            initRound4();
+                        });
+                    } else {
+                        showFeedback(false, text[currentLang].tryAgain);
+                    }
+                };
+                container.appendChild(card);
+            });
+        }
+
+        function initRound4() {
+            document.getElementById('r4-inst').textContent = text[currentLang].r4Inst(formatNum(targetNum));
+            const container = document.getElementById('balloons-area');
+            const counter = document.getElementById('r4-counter');
+            container.innerHTML = '';
+            r4Count = 0;
+            counter.textContent = formatNum(0);
+            
+            const colors = ['#ff6b6b', '#4ecdc4', '#f1c40f', '#a0c4ff', '#c77dff'];
+            const targetPopsNeeded = 3;
+
+            function spawnBalloon() {
+                if(r4Count >= targetPopsNeeded || document.getElementById('screen-r4').classList.contains('active') === false) {
+                    clearInterval(activeBalloonsInterval);
+                    return;
+                }
+
+                let b = document.createElement('div');
+                b.className = 'balloon';
+                b.style.left = (Math.random() * 80 + 10) + '%';
+                let dur = (Math.random() * 3 + 3);
+                b.style.animationDuration = dur + 's';
+                
+                let isTarget = Math.random() > 0.5;
+                let num = isTarget ? targetNum : (targetNum + Math.floor(Math.random() * 3) + 1);
+                
+                b.innerHTML = getBalloonSvg(colors[Math.floor(Math.random() * colors.length)]) + `<span>${formatNum(num)}</span>`;
+                
+                b.onclick = () => {
+                    if(num === targetNum) {
+                        b.style.display = 'none';
+                        r4Count++;
+                        counter.textContent = formatNum(r4Count);
+
+                        if(r4Count >= targetPopsNeeded) {
+                            clearInterval(activeBalloonsInterval);
+                            setTimeout(() => {
+                                showFeedback(true, text[currentLang].wellDone, () => {
+                                    document.getElementById('home-btn').style.display = 'none'; // إخفاء زر الرئيسية في الشاشة النهائية
+                                    switchScreen('screen-end');
+                                });
+                            }, 500);
+                        }
+                    } else {
+                        showFeedback(false, text[currentLang].tryAgain);
+                    }
+                };
+                container.appendChild(b);
+
+                setTimeout(() => { if (b && b.parentNode) b.parentNode.removeChild(b); }, dur * 1000);
+            }
+
+            activeBalloonsInterval = setInterval(spawnBalloon, 1200);
+            spawnBalloon();
+        }
+
+        // دالة العودة للشاشة الرئيسية
+        function resetGame() {
+            clearInterval(activeBalloonsInterval); // إيقاف أي بالونات تظهر
+            document.getElementById('home-btn').style.display = 'none'; // إخفاء زر الرئيسية
+            switchScreen('screen-setup'); // العودة للشاشة الأولى
+            
+            // تصفير جميع المتغيرات والمساحات
+            r1Count = 0;
+            r4Count = 0;
+            document.getElementById('apples-container').innerHTML = '';
+            document.getElementById('balloons-area').innerHTML = '';
+            document.getElementById('r2-options').innerHTML = '';
+            document.getElementById('r3-options').innerHTML = '';
+            
+            // إخفاء أي رسائل خطأ أو نجاح عالقة
+            document.getElementById('feedback-msg').className = 'feedback';
+        }
+
+    </script>
+</body>
+</html>
